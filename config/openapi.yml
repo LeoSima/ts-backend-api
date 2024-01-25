@@ -1,0 +1,74 @@
+openapi: 3.0.3
+info:
+  title: Tilda Swanton API
+  description: Backend API de comunidades para fins de testes e estudos
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: leo.csima@gmail.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+- url: /api/v1
+ 
+tags:
+  - name: saudacao
+    description: APIs de saudações
+ 
+paths:
+  /ola:
+    get:
+      description: Retorna 'Olá, <nome>/estranho!' ao solicitante
+      tags: 
+        - saudacao
+      operationId: ola
+      parameters:
+      - name: nome
+        required: false
+        in: query
+        description: Nome do solicitante
+        schema:
+          type: string
+      responses:
+        200:
+          description: Sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OlaResponse'
+                
+  /adeus:
+    get:
+      description: Retorna 'Adeus \<nome\>!' ao requisitante autenticado
+      tags:
+        - saudacao
+      operationId: adeus
+      security: 
+        - bearerAuth: []
+      responses:
+        200:
+          description: Sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OlaResponse'
+ 
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    OlaResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - mensagem
+      properties:
+        mensagem:
+          type: string

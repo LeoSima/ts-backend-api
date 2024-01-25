@@ -1,0 +1,5 @@
+# Módulos node
+/node_modules
+
+# Pasta gerada durante o build
+/dist
