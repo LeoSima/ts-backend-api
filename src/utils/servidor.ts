@@ -23,12 +23,15 @@ export async function criarServidor(): Promise<Express> {
 
     servidor.use(bodyParser.json());
 
+    /* istanbul ignore next */
     if (config.morganLogger)
         servidor.use(morgan(":method :url :status :response-time ms - :res[content-length]"));
 
+    /* istanbul ignore next */
     if (config.morganBodyLogger)
         morganBody(servidor);
 
+    /* istanbul ignore next */
     if (config.tsDevLogger)
         servidor.use(expressDevLogger);
     

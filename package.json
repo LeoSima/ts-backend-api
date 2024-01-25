@@ -8,11 +8,19 @@
     "scripts": {
         "build": "tsc",
         "start": "node -r tsconfig-paths/register -r dotenv-extended/config ./dist/app.js dotenv_config_path=./config/.env.prod dotenv_config_defaults=./config/.env.defaults",
-        "dev": "nodemon"
+        "dev": "nodemon",
+        "test:unit": "dotenv-extended --path=./config/.env.test --defaults=./config/.env.defaults jest",
+        "test:vunit": "dotenv-extended --path=./config/.env.test --defaults=./config/.env.defaults jest --verbose",
+        "test:cunit": "dotenv-extended --path=./config/.env.test --defaults=./config/.env.defaults jest --coverage"
     },
     "devDependencies": {
+        "@types/jest": "^29.5.11",
+        "@types/supertest": "^6.0.2",
         "concurrently": "^8.2.2",
+        "jest": "^29.7.0",
         "nodemon": "^3.0.3",
+        "supertest": "^6.3.4",
+        "ts-jest": "^29.1.2",
         "ts-node": "^10.9.2"
     },
     "dependencies": {

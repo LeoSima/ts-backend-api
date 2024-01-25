@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import config from "@TildaSwanton/config";
 import logger from "@TildaSwanton/utils/logger";
 import { criarServidor } from "./utils/servidor";
