@@ -3,3 +3,6 @@
 
 # Pasta gerada durante o build
 /dist
+
+# Pasta com a cobertura de teste
+/coverage
