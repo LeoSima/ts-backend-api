@@ -1,12 +1,19 @@
 import request from "supertest";
 import { Express } from "express-serve-static-core";
 
+import db from "@AncientOne/utils/db";
 import { criarServidor } from "@AncientOne/utils/servidor";
+import { criarDummyEAutorizar } from "@AncientOne/tests/usuario";
 
 let servidor: Express;
 
-beforeAll(async() => {
+beforeAll(async () => {
+    await db.abrir();
     servidor = await criarServidor();
+});
+
+afterAll(async () => {
+    await db.fechar();
 });
 
 describe("GET /ola", () => {
@@ -53,15 +60,18 @@ describe("GET /ola", () => {
 
 describe("GET /adeus", () => {
     it("Deve retornar 200 & retorno válido para autorização com token falso hardcoded", done => {
-        request(servidor)
-            .get(`/api/v1/adeus`)
-            .set("Authorization", "Bearer fakeToken")
-            .expect("Content-Type", /json/)
-            .expect(200)
-            .end((err, res) => {
-                if (err) return done(err);
-                expect(res.body).toMatchObject({"mensagem": "Adeus, fakeUser!"});
-                done();
+        criarDummyEAutorizar()
+            .then(dummy => {
+                request(servidor)
+                    .get(`/api/v1/adeus`)
+                    .set("Authorization", `Bearer ${dummy.token}`)
+                    .expect("Content-Type", /json/)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) return done(err);
+                        expect(res.body).toMatchObject({"mensagem": `Adeus, ${dummy.userId}!`});
+                        done();
+                    });
             });
     });
 

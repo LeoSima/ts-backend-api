@@ -1,20 +1,84 @@
+import fs from "fs";
+import jwt, { SignOptions, VerifyErrors, VerifyOptions } from "jsonwebtoken";
+
 import Usuario from "@AncientOne/api/models/usuario";
+import config from "@AncientOne/config";
 import logger from "@AncientOne/utils/logger";
 
 export type ErroResponse = {error: {type: string, message: string}};
 export type AuthResponse = ErroResponse | {userId: string};
-export type CreateUserResponse = ErroResponse | {userId: string};
+export type CriarUsuarioResponse = ErroResponse | {userId: string};
+export type LoginUsuarioResponse = ErroResponse | {token: string, userId: string, expiraEm: Date};
 
-function auth(bearerToken: string) : AuthResponse {
-    const token = bearerToken.replace("Bearer ", "");
+const privateKey = fs.readFileSync(config.privateKeyFile);
+const privateSecret = {
+    key: privateKey,
+    passphrase: config.privateKeyPassphrase
+};
+const signOptions: SignOptions = {
+    algorithm: "RS256",
+    expiresIn: "14d"
+};
 
-    if (token === "fakeToken")
-        return ({userId: "fakeUser"});
+const publicKey = fs.readFileSync(config.publicKeyFile);
+const verifyOptions: VerifyOptions = {
+    algorithms: ["RS256"]
+};
 
-    return ({error: {type: "nao_autorizado", message: "Falha na Autenticação"}});
+function auth(bearerToken: string) : Promise<AuthResponse> {
+    return new Promise(function(resolve, reject) {
+        const token = bearerToken.replace("Bearer ", "");
+    
+        jwt.verify(token, publicKey, verifyOptions, (err: VerifyErrors | null, decoded: object | undefined | any) => {
+            if (err === null && decoded !== undefined) {
+                const d = decoded as {userId?: string, exp: number};
+
+                if (d.userId) {
+                    resolve({userId: d.userId});
+                    return;
+                }
+            }
+
+            resolve({error: {type: "nao_autorizado", message: "Falha na Autenticação"}});
+        });
+    });
 }
 
-function criarUsuario(email: string, username: string, nome: string, senha: string): Promise<CreateUserResponse> {
+function criarTokenDeAutenticacao(userId: string): Promise<{token: string, expiraEm: Date}> {
+    return new Promise(function (resolve, reject) {
+        return jwt.sign({userId: userId}, privateSecret, signOptions, (err: Error | null, encoded: string | undefined) => {
+            if (err === null && encoded !== undefined) {
+                const expiraApos = 2 * 604800 /* duas semanas */
+                const expiraEm = new Date();
+                expiraEm.setSeconds(expiraEm.getSeconds() + expiraApos);
+
+                resolve({token: encoded, expiraEm: expiraEm})
+            } else {
+                reject(err);
+            }
+        });
+    });
+}
+
+async function login(login: string, senha: string): Promise<LoginUsuarioResponse> {
+    try {
+        const usuario = await Usuario.findOne({username: login});
+        if (!usuario)
+            return {error: {type: "credenciais_invalidas", message: "Login/Senha Inválido"}};
+
+        const senhaCorresponde = await usuario.validaSenha(senha);
+        if (!senhaCorresponde)
+            return {error: {type: "credenciais_invalidas", message: "Login/Senha Inválido"}};
+
+        const authToken = await criarTokenDeAutenticacao(usuario._id.toString());
+        return {userId: usuario._id.toString(), token: authToken.token, expiraEm: authToken.expiraEm};
+    } catch (err) {
+        logger.error(`login: ${err}`);
+        return Promise.reject({error: {type: "erro_interno_do_servidor", message: "Erro Interno do Servidor"}});
+    }
+}
+
+function criarUsuario(email: string, username: string, nome: string, senha: string): Promise<CriarUsuarioResponse> {
     return new Promise(function(resolve, reject) {
         const usuario = new Usuario({email: email, username: username, nome: nome, senha: senha});
 
@@ -35,4 +99,4 @@ function criarUsuario(email: string, username: string, nome: string, senha: stri
     });
 }
 
-export default {auth: auth, criarUsuario: criarUsuario};
+export default {auth: auth, criarTokenDeAutenticacao: criarTokenDeAutenticacao, login: login, criarUsuario: criarUsuario};
