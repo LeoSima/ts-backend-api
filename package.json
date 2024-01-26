@@ -7,7 +7,7 @@
     "license": "MIT",
     "scripts": {
         "build": "tsc",
-        "start": "node -r tsconfig-paths/register -r dotenv-extended/config ./dist/app.js dotenv_config_path=./config/.env.prod dotenv_config_defaults=./config/.env.defaults",
+        "start": "dotenv-extended --path=./config/.env.prod --defaults=./config/.env.defaults node -r tsconfig-paths/register ./dist/app.js",
         "dev": "nodemon",
         "test:unit": "dotenv-extended --path=./config/.env.test --defaults=./config/.env.defaults jest",
         "test:vunit": "dotenv-extended --path=./config/.env.test --defaults=./config/.env.defaults jest --verbose",
