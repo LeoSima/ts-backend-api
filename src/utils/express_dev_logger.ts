@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 import express from 'express';
-import logger from "@TildaSwanton/utils/logger";
+import logger from "@AncientOne/utils/logger";
 
 export const expressDevLogger = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
     const tempoHoraInicio = process.hrtime();

@@ -1,5 +1,5 @@
 {
   "watch": ["src"],
   "ext": "ts",
-  "exec": "concurrently \"npx tsc --watch\" \"ts-node -r tsconfig-paths/register -r dotenv-extended/config ./src/app dotenv_config_path=./config/.env.dev dotenv_config_defaults=./config/.env.defaults\""
+  "exec": "concurrently \"npx tsc --watch\" \"dotenv-extended --path=./config/.env.dev --defaults=./config/.env.defaults ts-node -r tsconfig-paths/register ./src/app\""
 }

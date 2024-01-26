@@ -1,10 +1,11 @@
+import { faker } from "@faker-js/faker";
 import request from "supertest";
 import { Express } from "express-serve-static-core";
 
-import UsuarioService from "@TildaSwanton/api/services/usuario";
-import { criarServidor } from "@TildaSwanton/utils/servidor";
+import UsuarioService from "@AncientOne/api/services/usuario";
+import { criarServidor } from "@AncientOne/utils/servidor";
 
-jest.mock("@TildaSwanton/api/services/usuario");
+jest.mock("@AncientOne/api/services/usuario");
 
 let servidor: Express;
 beforeAll(async () => {
@@ -22,6 +23,27 @@ describe("auth com falha", () => {
             .set("Authorization", "Bearer fakeToken")
             .expect(500)
             .end((err, res) => {
+                if (err) return done(err);
+                expect(res.body).toMatchObject({error: {type: "erro_interno_do_servidor", message: "Erro Interno do Servidor"}});
+                done();
+            });
+    });
+});
+
+describe("criarUsuario falha", () => {
+    it("Deve retornar 500 & response válido se método auth lançar erro", done => {
+        (UsuarioService.criarUsuario as jest.Mock).mockResolvedValue({error: {type: "desconhecido"}});
+
+        request(servidor)
+            .post(`/api/v1/usuario`)
+            .send({
+                email: faker.internet.email(),
+                username: faker.internet.userName(),
+                nome: faker.person.fullName(),
+                senha: faker.internet.password()
+            })
+            .expect(500)
+            .end(function(err, res) {
                 if (err) return done(err);
                 expect(res.body).toMatchObject({error: {type: "erro_interno_do_servidor", message: "Erro Interno do Servidor"}});
                 done();

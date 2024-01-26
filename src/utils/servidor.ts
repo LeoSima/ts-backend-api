@@ -7,10 +7,10 @@ import morganBody from "morgan-body";
 import { connector, summarise } from "swagger-routes-express";
 import YAML from "yamljs";
 
-import * as api from "@TildaSwanton/api/controllers";
-import config from "@TildaSwanton/config";
-import logger from "@TildaSwanton/utils/logger";
-import { expressDevLogger } from "@TildaSwanton/utils/express_dev_logger";
+import * as api from "@AncientOne/api/controllers";
+import config from "@AncientOne/config";
+import logger from "@AncientOne/utils/logger";
+import { expressDevLogger } from "@AncientOne/utils/express_dev_logger";
 
 export async function criarServidor(): Promise<Express> {
     const yamlSpecFile = "./config/openapi.yml";

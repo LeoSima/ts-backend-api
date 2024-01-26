@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Tilda Swanton API
+  title: Ancient One API
   description: Backend API de comunidades para fins de testes e estudos
   termsOfService: http://swagger.io/terms/
   contact:
@@ -18,6 +18,8 @@ servers:
 tags:
   - name: saudacao
     description: APIs de saudações
+  - name: usuario
+    description: APIs de usuários
  
 paths:
   /ola:
@@ -57,6 +59,60 @@ paths:
               schema:
                 $ref: '#/components/schemas/OlaResponse'
  
+  /usuario:
+    post:
+      summary: Criar usuário
+      tags:
+        - usuario
+      operationId: criarUsuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - email
+                - username
+                - nome
+                - senha
+              properties:
+                email:
+                  type: string
+                  format: email
+                username:
+                  type: string
+                nome:
+                  type: string
+                senha:
+                  type: string
+      responses:
+        201:
+          description: Sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - userId
+                properties:
+                  userId:
+                    type: string
+        409:
+          description: Conflito
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FalhaResponse"
+        500:
+          description: Erro Interno do Servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FalhaResponse"
+ 
 components:
   securitySchemes:
     bearerAuth:
@@ -71,4 +127,16 @@ components:
         - mensagem
       properties:
         mensagem:
+          type: string
+        
+    FalhaResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+        error:
           type: string
