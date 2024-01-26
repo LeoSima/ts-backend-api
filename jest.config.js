@@ -3,7 +3,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   moduleNameMapper: {
-    "@TildaSwanton/(.*)": "<rootDir>/src/$1"
+    "@AncientOne/(.*)": "<rootDir>/src/$1"
   },
   testPathIgnorePatterns: [
     "<rootDir>/dist"

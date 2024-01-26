@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 import winston from "winston";
-import config from "@TildaSwanton/config";
+import config from "@AncientOne/config";
 
 // npm debug levels (winston default):
 // {
@@ -31,7 +31,7 @@ const logger = winston.createLogger({
         winston.format.timestamp({format: "YYYY-MM-DD HH:mm:ss.SSS"}),
         prettyJson
     ),
-    defaultMeta: {service: "tilda-swanton"},
+    defaultMeta: {service: "ancient-one"},
     transports: [new winston.transports.Console()]
 });
 

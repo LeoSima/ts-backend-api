@@ -12,7 +12,12 @@ interface Config {
     morganLogger: boolean,
     morganBodyLogger: boolean,
     tsDevLogger: boolean,
-    loggerLevel: LogLevel
+    loggerLevel: LogLevel,
+    mongo: {
+        url: string,
+        useCreateIndex: boolean,
+        autoIndex: boolean
+    }
 }
 
 const config: Config = {
@@ -21,7 +26,12 @@ const config: Config = {
     morganLogger: parsedEnv.MORGAN_LOGGER as boolean,
     morganBodyLogger: parsedEnv.MORGAN_BODY_LOGGER as boolean,
     tsDevLogger: parsedEnv.TS_DEV_LOGGER as boolean,
-    loggerLevel: parsedEnv.LOGGER_LEVEL as LogLevel
+    loggerLevel: parsedEnv.LOGGER_LEVEL as LogLevel,
+    mongo: {
+        url: parsedEnv.MONGO_URL as string,
+        useCreateIndex: parsedEnv.MONGO_CREATE_INDEX as boolean,
+        autoIndex: parsedEnv.MONGO_AUTO_INDEX as boolean
+    }
 };
 
 export default config;
