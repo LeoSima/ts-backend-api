@@ -1,7 +1,7 @@
 import request from "supertest";
 import { Express } from "express-serve-static-core";
 
-import { criarServidor } from "@TildaSwanton/utils/servidor";
+import { criarServidor } from "@AncientOne/utils/servidor";
 
 let servidor: Express;
 

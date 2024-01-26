@@ -1,5 +1,5 @@
 {
-    "name": "tilda-swanton",
+    "name": "ancient-one",
     "version": "1.0.0",
     "description": "Backend API desenvolvida para testes e aprendizado",
     "main": "src/app.ts",
@@ -14,6 +14,7 @@
         "test:cunit": "dotenv-extended --path=./config/.env.test --defaults=./config/.env.defaults jest --coverage"
     },
     "devDependencies": {
+        "@faker-js/faker": "^8.4.0",
         "@types/jest": "^29.5.11",
         "@types/supertest": "^6.0.2",
         "concurrently": "^8.2.2",
@@ -24,17 +25,21 @@
         "ts-node": "^10.9.2"
     },
     "dependencies": {
+        "@types/bcrypt": "^5.0.2",
         "@types/dotenv-parse-variables": "^2.0.3",
         "@types/express": "^4.17.21",
         "@types/morgan": "^1.9.9",
         "@types/node": "^20.11.5",
         "@types/validator": "^13.11.8",
         "@types/yamljs": "^0.2.34",
+        "bcrypt": "^5.1.1",
         "connect": "^3.7.0",
         "dotenv-extended": "^2.9.0",
         "dotenv-parse-variables": "^2.0.0",
         "express": "^4.18.2",
         "express-openapi-validator": "^5.1.2",
+        "mongodb-memory-server": "^9.1.6",
+        "mongoose": "^8.1.1",
         "morgan": "^1.10.0",
         "morgan-body": "^2.6.9",
         "swagger-routes-express": "^3.3.2",
