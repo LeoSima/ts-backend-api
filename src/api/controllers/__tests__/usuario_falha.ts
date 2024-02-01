@@ -50,3 +50,22 @@ describe("criarUsuario falha", () => {
             });
     });
 });
+
+describe("Falha no login", () => {
+    it("Deve retornar 500 & response válido se o método auth lançar um erro", done => {
+        (UsuarioService.login as jest.Mock).mockResolvedValue({error: {type: "desconhecido"}});
+
+        request(servidor)
+            .post(`/api/v1/login`)
+            .send({
+                username: faker.internet.userName(),
+                senha: faker.internet.password()
+            })
+            .expect(500)
+            .end(function(err, res) {
+                if (err) return done(err);
+                expect(res.body).toMatchObject({error: {type: "erro_interno_do_servidor", message: "Erro Interno do Servidor"}});
+                done();
+            });
+    });
+});

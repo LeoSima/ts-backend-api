@@ -113,11 +113,70 @@ paths:
               schema:
                 $ref: "#/components/schemas/FalhaResponse"
  
+  /login:
+    post:
+      summary: Login
+      tags:
+        - usuario
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - username
+                - senha
+              properties:
+                username:
+                  type: string
+                senha:
+                  type: string
+      responses:
+        200:
+          description: Sucesso
+          headers:
+            X-Expires-After:
+              description: Data em UTC de quando o token expira
+              required: true
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - userId
+                properties:
+                  userId:
+                    type: string
+                  token:
+                    type: string
+                    format: '^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$'
+        404:
+          description: Login Inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FalhaResponse'
+        500:
+          description: Erro Interno do Sistema
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FalhaResponse'
+              
+ 
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
+      bearerFormat: JWT
 
   schemas:
     OlaResponse:
