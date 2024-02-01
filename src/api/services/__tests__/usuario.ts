@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 
 import db from "@AncientOne/utils/db";
 import usuario from "../usuario";
+import { criarDummy, criarDummyEAutorizar, dummy } from "@AncientOne/tests/usuario";
 
 beforeAll(async () => {
     await db.abrir();
@@ -12,14 +13,38 @@ afterAll(async () => {
 });
 
 describe("auth", () => {
-    it("Deve ter um retorno válido com userId para token hardcoded", () => {
-        const retorno = usuario.auth("fakeToken");
-        expect(retorno).toEqual({userId: "fakeUser"});
+    it("Deve ter um retorno válido com userId para token válido", async () => {
+        const dummy = await criarDummyEAutorizar();
+        await expect(usuario.auth(dummy.token)).resolves.toEqual({userId: dummy.userId});
     });
 
-    it("Deve retornar erro para token inválido", () => {
-        const retorno = usuario.auth("tokenInvalido");
-        expect(retorno).toEqual({error: {type: "nao_autorizado", message: "Falha na Autenticação"}});
+    it("Deve retornar erro para token inválido", async () => {
+        const response = await usuario.auth("tokenInvalido");
+        expect(response).toEqual({error: {type: "nao_autorizado", message: "Falha na Autenticação"}});
+    });
+});
+
+describe("login", () => {
+    it("Deve retornar JWT token, userId e tempo até expirar para login e senha válidos", async () => {
+        const dummy = await criarDummy();
+        await expect(usuario.login(dummy.username, dummy.senha)).resolves.toEqual({
+            userId: dummy.userId,
+            token: expect.stringMatching(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*/),
+            expiraEm: expect.any(Date)
+        });
+    });
+
+    it("Deve retornar com erro se não existir usuário para o login informado", async () => {
+        await expect(usuario.login(faker.internet.userName(), faker.internet.password())).resolves.toEqual({
+            error: {type: "credenciais_invalidas", message: "Login/Senha Inválido"}
+        });
+    });
+
+    it("Deve retornar com erro para senha esteja errada", async () => {
+        const dummy = await criarDummy();
+        await expect(usuario.login(dummy.username, faker.internet.password())).resolves.toEqual({
+            error: {type: "credenciais_invalidas", message: "Login/Senha Inválido"}
+        });
     });
 });
 

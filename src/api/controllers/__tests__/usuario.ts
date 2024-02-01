@@ -5,6 +5,7 @@ import { Express } from "express-serve-static-core";
 
 import db from "@AncientOne/utils/db";
 import { criarServidor } from "@AncientOne/utils/servidor";
+import { criarDummy } from "@AncientOne/tests/usuario";
 
 let servidor: Express;
 beforeAll(async () => {
@@ -36,7 +37,7 @@ describe("POST /api/v1/usuario", () => {
             });
     });
 
-    it("Deve retonar 409 & response válido para email duplicado", done => {
+    it("Deve retornar 409 & response válido para email duplicado", done => {
         const data = {
             email: faker.internet.email(),
             username: faker.internet.userName(),
@@ -109,6 +110,89 @@ describe("POST /api/v1/usuario", () => {
                 email: faker.internet.email(),
                 uname: faker.internet.userName(),
                 nome: faker.person.fullName(),
+                senha: faker.internet.password()
+            })
+            .expect(400)
+            .end(function(err, res) {
+                if (err) return done(err);
+                expect(res.body).toMatchObject({
+                    error: {
+                        type: "validacao_request",
+                        message: expect.stringMatching(/username/)
+                    }
+                });
+                done();
+            });
+    });
+});
+
+describe("POST /api/v1/login", () => {
+    it("Deve retornar 200 & response válido para request de login válido", done => {
+        criarDummy()
+            .then(dummy => {
+                request(servidor)
+                    .post(`/api/v1/login`)
+                    .send({
+                        username: dummy.username,
+                        senha: dummy.senha
+                    })
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) return done(err);
+
+                        expect(res.header["x-expires-after"]).toMatch(/^(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))$/);
+                        expect(res.body).toEqual({
+                            userId: expect.stringMatching(/^[a-f0-9]{24}$/),
+                            token: expect.stringMatching(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/)
+                        });
+
+                        done();
+                    });
+            });
+    });
+
+    it("Deve retornar 404 & response válido para usuário não existente", done => {
+        request(servidor)
+            .post(`/api/v1/login`)
+            .send({
+                username: faker.internet.userName(),
+                senha: faker.internet.password()
+            })
+            .expect(404)
+            .end(function(err, res) {
+                if (err) return done(err);
+                expect(res.body).toEqual({
+                    error: {type: "credenciais_invalidas", message: "Login/Senha Inválido"}
+                });
+                done();
+            });
+    });
+
+    it("Deve retornar 404 & response válido para senha incorreta", done => {
+        criarDummy()
+            .then(dummy => {
+                request(servidor)
+                .post(`/api/v1/login`)
+                .send({
+                    username: dummy.username,
+                    senha: faker.internet.password()
+                })
+                .expect(404)
+                .end(function(err, res) {
+                    if (err) return done(err);
+                    expect(res.body).toEqual({
+                        error: {type: "credenciais_invalidas", message: "Login/Senha Inválido"}
+                    });
+                    done();
+                });
+            });
+    });
+
+    it("Deve retornar 400 & response válido para request inválido", done => {
+        request(servidor)
+            .post(`/api/v1/login`)
+            .send({
+                usname: faker.internet.userName(),
                 senha: faker.internet.password()
             })
             .expect(400)
