@@ -44,3 +44,24 @@ export function criarUsuario(req: express.Request, res: express.Response, next: 
             writeJsonResponse(res, 500, {error: {type: "erro_interno_do_servidor", message: "Erro Interno do Servidor"}});
         });
 }
+
+export function login(req: express.Request, res: express.Response): void {
+    const {username, senha} = req.body;
+
+    UsuarioService.login(username, senha)
+        .then(resp => {
+            if((resp as any).error) {
+                if((resp as ErroResponse).error.type === "credenciais_invalidas")
+                    writeJsonResponse(res, 404, resp);
+                else
+                    throw new Error(`unsupported ${resp}`);
+            } else {
+                const {userId, token, expiraEm} = resp as {token: string, userId: string, expiraEm: Date}
+                writeJsonResponse(res, 200, {userId: userId, token: token}, {"X-Expires-After": expiraEm.toISOString()});
+            }
+        })
+        .catch((err: any) => {
+            logger.error(`login: ${err}`);
+            writeJsonResponse(res, 500, {error: {type: "erro_interno_do_servidor", message: "Erro Interno do Servidor"}});
+        });
+}
