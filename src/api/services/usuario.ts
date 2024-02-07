@@ -1,8 +1,9 @@
 import fs from "fs";
 import jwt, { SignOptions, VerifyErrors, VerifyOptions } from "jsonwebtoken";
 
-import Usuario from "@AncientOne/api/models/usuario";
+import Usuario, { IUsuario } from "@AncientOne/api/models/usuario";
 import config from "@AncientOne/config";
+import cacheLocal from "@AncientOne/utils/cache_local";
 import logger from "@AncientOne/utils/logger";
 
 export type ErroResponse = {error: {type: string, message: string}};
@@ -62,9 +63,17 @@ function criarTokenDeAutenticacao(userId: string): Promise<{token: string, expir
 
 async function login(login: string, senha: string): Promise<LoginUsuarioResponse> {
     try {
-        const usuario = await Usuario.findOne({username: login});
-        if (!usuario)
-            return {error: {type: "credenciais_invalidas", message: "Login/Senha Inválido"}};
+        let usuario: IUsuario | undefined | null = cacheLocal.get<IUsuario>(login);
+
+        if (!usuario) {
+            usuario = await Usuario.findOne({username: login});
+            
+            if (!usuario)
+                return {error: {type: "credenciais_invalidas", message: "Login/Senha Inválido"}};
+
+            cacheLocal.set(usuario._id.toString(), usuario);
+            cacheLocal.set(login, usuario);
+        }
 
         const senhaCorresponde = await usuario.validaSenha(senha);
         if (!senhaCorresponde)
