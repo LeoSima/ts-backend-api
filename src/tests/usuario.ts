@@ -30,3 +30,8 @@ export async function criarDummyEAutorizar(): Promise<UsuarioDummyAutorizado> {
 
     return {...usuario, token: authToken.token};
 }
+
+export async function deletaUsuario(userId: string): Promise<void> {
+    const dbUsuario = await Usuario.findById(userId);
+    await dbUsuario!.deleteOne();
+}
