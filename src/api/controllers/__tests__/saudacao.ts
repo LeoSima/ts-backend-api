@@ -3,7 +3,7 @@ import { Express } from "express-serve-static-core";
 
 import db from "@AncientOne/utils/db";
 import { criarServidor } from "@AncientOne/utils/servidor";
-import { criarDummyEAutorizar } from "@AncientOne/tests/usuario";
+import { criarDummyEAutorizar, deletaUsuario } from "@AncientOne/tests/usuario";
 
 let servidor: Express;
 
@@ -69,7 +69,7 @@ describe("GET /adeus", () => {
                     .expect(200)
                     .end((err, res) => {
                         if (err) return done(err);
-                        expect(res.body).toMatchObject({"mensagem": `Adeus, ${dummy.userId}!`});
+                        expect(res.body).toMatchObject({"mensagem": `Adeus, ${dummy.nome}!`});
                         done();
                     });
             });
@@ -103,4 +103,23 @@ describe("GET /adeus", () => {
                 done();
             });
     });
+    // COMMITAR ISSO E VOLTAR A FAZER O CACHE INTERNO
+    it("Deve retornar 500 & response válido se o usuário autenticado for deletado", done => {
+        criarDummyEAutorizar()
+            .then(dummy => {
+                deletaUsuario(dummy.userId)
+                    .then(() => {
+                        request(servidor)
+                            .get(`/api/v1/adeus`)
+                            .set("Authorization", `Bearer ${dummy.token}`)
+                            .expect("Content-Type", /json/)
+                            .expect(500)
+                            .end(function(err, res) {
+                                if (err) return done(err);
+                                expect(res.body).toEqual({error: {type: "erro_interno_do_servidor", message: "Erro Interno do Servidor"}});
+                                done();
+                            });
+                    });
+            });
+    })
 });
