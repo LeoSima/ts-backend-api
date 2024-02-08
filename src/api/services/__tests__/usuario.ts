@@ -1,19 +1,44 @@
 import { faker } from "@faker-js/faker";
 
 import db from "@AncientOne/utils/db";
+import cacheExterno from "@AncientOne/utils/cache_externo";
 import usuario from "../usuario";
-import { criarDummy, criarDummyEAutorizar, dummy } from "@AncientOne/tests/usuario";
+import { criarDummy, criarDummyEAutorizar } from "@AncientOne/tests/usuario";
 
 beforeAll(async () => {
+    await cacheExterno.abrir();
     await db.abrir();
 });
 
 afterAll(async () => {
+    await cacheExterno.fechar();
     await db.fechar();
 });
 
 describe("auth", () => {
-    it("Deve ter um retorno válido com userId para token válido", async () => {
+    it("Deve ter um retorno válido para token válido", async () => {
+        const dummy = await criarDummyEAutorizar();
+        await expect(usuario.auth(dummy.token)).resolves.toEqual({userId: dummy.userId});
+    });
+
+    it("Deve ter retorno válido token válido que não esteja salvo em cache", async () => {
+        cacheExterno.getPropriedade = jest.fn().mockReturnValueOnce(null);
+
+        const dummy = await criarDummyEAutorizar();
+        await expect(usuario.auth(dummy.token)).resolves.toEqual({userId: dummy.userId});
+    });
+
+    it("Deve ter retorno válido para token válido com problema na conexão do Redis para recuperar propriedade", async () => {
+        cacheExterno.getPropriedade = jest.fn().mockRejectedValue(new Error("Erro teste"));
+
+        const dummy = await criarDummyEAutorizar();
+        await expect(usuario.auth(dummy.token)).resolves.toEqual({userId: dummy.userId});
+    });
+
+    it("Deve ter retorno válido para token válido com problema na conexão do Redis para recuperar e setar propriedade", async () => {
+        cacheExterno.getPropriedade = jest.fn().mockRejectedValue(new Error("Erro teste"));
+        cacheExterno.setPropriedade = jest.fn().mockRejectedValue(new Error("Erro teste"));
+
         const dummy = await criarDummyEAutorizar();
         await expect(usuario.auth(dummy.token)).resolves.toEqual({userId: dummy.userId});
     });

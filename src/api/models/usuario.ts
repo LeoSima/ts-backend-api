@@ -11,7 +11,7 @@ interface IUsuarioDocument extends Document {
     dataCriacao: Date
 }
 
-interface IUsuario extends IUsuarioDocument {
+export interface IUsuario extends IUsuarioDocument {
     // operações a nível de documento
     validaSenha(senha: string): Promise<boolean>
 }

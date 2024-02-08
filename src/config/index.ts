@@ -13,6 +13,8 @@ interface Config {
     morganBodyLogger: boolean,
     tsDevLogger: boolean,
     loggerLevel: LogLevel,
+    localCacheTtl: number,
+    redisUrl: string,
     mongo: {
         url: string,
         useCreateIndex: boolean,
@@ -30,6 +32,8 @@ const config: Config = {
     morganBodyLogger: parsedEnv.MORGAN_BODY_LOGGER as boolean,
     tsDevLogger: parsedEnv.TS_DEV_LOGGER as boolean,
     loggerLevel: parsedEnv.LOGGER_LEVEL as LogLevel,
+    localCacheTtl: parsedEnv.LOCAL_CACHE_TTL as number,
+    redisUrl: parsedEnv.REDIS_URL as string,
     mongo: {
         url: parsedEnv.MONGO_URL as string,
         useCreateIndex: parsedEnv.MONGO_CREATE_INDEX as boolean,
