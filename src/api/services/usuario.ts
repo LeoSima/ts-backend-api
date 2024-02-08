@@ -4,6 +4,7 @@ import jwt, { SignOptions, VerifyErrors, VerifyOptions } from "jsonwebtoken";
 import Usuario, { IUsuario } from "@AncientOne/api/models/usuario";
 import config from "@AncientOne/config";
 import cacheLocal from "@AncientOne/utils/cache_local";
+import cacheExterno from "@AncientOne/utils/cache_externo";
 import logger from "@AncientOne/utils/logger";
 
 export type ErroResponse = {error: {type: string, message: string}};
@@ -26,21 +27,34 @@ const verifyOptions: VerifyOptions = {
     algorithms: ["RS256"]
 };
 
-function auth(bearerToken: string) : Promise<AuthResponse> {
+async function auth(bearerToken: string) : Promise<AuthResponse> {
+    const token = bearerToken.replace("Bearer ", "");
+
+    try {
+        const userId = await cacheExterno.getPropriedade(token);
+        if (userId)
+            return {userId: userId}
+    } catch (err) {
+        logger.warn(`login.cache.addToken: ${err}`);
+    }
+
     return new Promise(function(resolve, reject) {
-        const token = bearerToken.replace("Bearer ", "");
-    
         jwt.verify(token, publicKey, verifyOptions, (err: VerifyErrors | null, decoded: object | undefined | any) => {
             if (err === null && decoded !== undefined) {
-                const d = decoded as {userId?: string, exp: number};
+                const d = decoded as {userId: string, exp: number};
+                const expiraEm = d.exp - Math.round((new Date()).valueOf() / 1000);
 
-                if (d.userId) {
-                    resolve({userId: d.userId});
-                    return;
-                }
+                cacheExterno.setPropriedade(token, d.userId, expiraEm)
+                    .then(() => {
+                        resolve({userId: d.userId});
+                    })
+                    .catch((err) => {
+                        resolve({userId: d.userId});
+                        logger.warn(`auth.cache.addToken: ${err}`);
+                    });
+            } else {
+                resolve({error: {type: "nao_autorizado", message: "Falha na Autenticação"}});
             }
-
-            resolve({error: {type: "nao_autorizado", message: "Falha na Autenticação"}});
         });
     });
 }
@@ -53,7 +67,14 @@ function criarTokenDeAutenticacao(userId: string): Promise<{token: string, expir
                 const expiraEm = new Date();
                 expiraEm.setSeconds(expiraEm.getSeconds() + expiraApos);
 
-                resolve({token: encoded, expiraEm: expiraEm})
+                cacheExterno.setPropriedade(encoded, userId, expiraApos)
+                    .then(() => {
+                        resolve({token: encoded, expiraEm: expiraEm});
+                    })
+                    .catch(err => {
+                        logger.warn(`criarTokenDeAutenticacao.setPropriedade: ${err}`);
+                        resolve({token: encoded, expiraEm: expiraEm});
+                    });
             } else {
                 reject(err);
             }
