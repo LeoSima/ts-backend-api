@@ -4,16 +4,19 @@ import request from "supertest";
 import { Express } from "express-serve-static-core";
 
 import db from "@AncientOne/utils/db";
+import cacheExterno from "@AncientOne/utils/cache_externo";
 import { criarServidor } from "@AncientOne/utils/servidor";
 import { criarDummy } from "@AncientOne/tests/usuario";
 
 let servidor: Express;
 beforeAll(async () => {
+    await cacheExterno.abrir();
     await db.abrir();
     servidor = await criarServidor();
 });
 
 afterAll(async () => {
+    await cacheExterno.fechar();
     await db.fechar();
 });
 

@@ -8,9 +8,9 @@
 usage()
 {
     echo "usage: ./scripts/run_dev_dbs.sh [-k|-c|-r]"
-    echo "  -k|--kill   : kill mongo docker containers"
+    echo "  -k|--kill   : kill redis and mongo docker containers"
     echo "  -c|--clear  : create/clear mongodb host folder"
-    echo "  -r|--run    : run mongo container"
+    echo "  -r|--run    : run redis and mongo containers"
     echo "example: ./scripts/run_dev_dbs.sh -k -c -r"
 }
 
@@ -37,7 +37,7 @@ while [ "$1" != "" ]; do
 done
 
 if [ "$kill" = "1" ]; then
-    docker kill mongo
+    docker kill redis mongo
 fi
 
 if [ "$clear" = "1" ]; then
@@ -47,6 +47,10 @@ fi
 
 if [ "$run" = "1" ]; then
     command -v docker >/dev/null 2>&1 || { echo >&2 "'docker' is not install installed. Aborting."; exit 1; }
+
+    name='redis'
+    [[ $(docker ps -f "name=$name" --format '{{.Names}}') == $name ]] ||
+    docker run --rm -d -p 6379:6379 --name "$name" redis --save ''
 
     name='mongo'
     [[ $(docker ps -f "name=$name" --format '{{.Names}}') == $name ]] ||
