@@ -2,7 +2,7 @@
 FROM node:lts
 
 # Create app directory
-WORKDIR /opt/ancient-one
+WORKDIR /app
 
 # Install app dependencies
 COPY package.json ./

@@ -16,7 +16,7 @@ services:
         constraints:
           - 'node.role == manager'
     ports: # exposed ports out of cluster
-      - 80:80
+      - "80:80"
       # - 443:443 # if you have certs
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro,delegated
@@ -31,6 +31,8 @@ services:
   # 1) ancient-one + redis + mongo
   ancient-one:
     image: leosima/ancient-one # specify your repo name
+    ports:
+      - "3000:3000"
     build: # to build image with docker-compose
       context: ../../
       dockerfile: ./Dockerfile
@@ -55,7 +57,7 @@ services:
     image: redis
     restart: always
     ports: # uncomment if you would like to connect from host
-      - 6379:6379
+      - "6379:6379"
     command: redis-server --save ''
     networks:
       - api-db
@@ -68,8 +70,8 @@ services:
         constraints:
           - 'node.role == manager'
     ports: # uncomment if you would like to connect from host
-      - 27017:27017
+      - "27017:27017"
     volumes:
-      - ../../../docker/mongodb:/data/db:delegated
+      - /var/lib/my-mongodb-data/:/data/db/
     networks:
       - api-db
