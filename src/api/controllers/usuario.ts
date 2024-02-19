@@ -46,9 +46,9 @@ export function criarUsuario(req: express.Request, res: express.Response, next: 
 }
 
 export function login(req: express.Request, res: express.Response): void {
-    const {username, senha} = req.body;
+    const {login, senha} = req.body;
 
-    UsuarioService.login(username, senha)
+    UsuarioService.login(login, senha)
         .then(resp => {
             if((resp as any).error) {
                 if((resp as ErroResponse).error.type === "credenciais_invalidas")

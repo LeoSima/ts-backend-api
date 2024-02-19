@@ -50,9 +50,18 @@ describe("auth", () => {
 });
 
 describe("login", () => {
-    it("Deve retornar JWT token, userId e tempo até expirar para login e senha válidos", async () => {
+    it("Deve retornar JWT token, userId e tempo até expirar para login com username e senha válidos", async () => {
         const dummy = await criarDummy();
         await expect(usuario.login(dummy.username, dummy.senha)).resolves.toEqual({
+            userId: dummy.userId,
+            token: expect.stringMatching(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*/),
+            expiraEm: expect.any(Date)
+        });
+    });
+
+    it("Deve retornar JWT token, userId e tempo até expirar para login com email e senha válidos", async () => {
+        const dummy = await criarDummy();
+        await expect(usuario.login(dummy.email, dummy.senha)).resolves.toEqual({
             userId: dummy.userId,
             token: expect.stringMatching(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*/),
             expiraEm: expect.any(Date)
@@ -65,7 +74,7 @@ describe("login", () => {
         });
     });
 
-    it("Deve retornar com erro para senha esteja errada", async () => {
+    it("Deve retornar com erro para senha errada", async () => {
         const dummy = await criarDummy();
         await expect(usuario.login(dummy.username, faker.internet.password())).resolves.toEqual({
             error: {type: "credenciais_invalidas", message: "Login/Senha Inválido"}

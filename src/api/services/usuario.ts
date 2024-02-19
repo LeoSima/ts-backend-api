@@ -87,7 +87,7 @@ async function login(login: string, senha: string): Promise<LoginUsuarioResponse
         let usuario: IUsuario | undefined | null = cacheLocal.get<IUsuario>(login);
 
         if (!usuario) {
-            usuario = await Usuario.findOne({username: login});
+            usuario = await Usuario.findOne({$or: [{username: login}, {email: login}]});
             
             if (!usuario)
                 return {error: {type: "credenciais_invalidas", message: "Login/Senha Inválido"}};
