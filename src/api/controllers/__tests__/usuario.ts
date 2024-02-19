@@ -130,13 +130,37 @@ describe("POST /api/v1/usuario", () => {
 });
 
 describe("POST /api/v1/login", () => {
-    it("Deve retornar 200 & response válido para request de login válido", done => {
+    it("Deve retornar 200 & response válido para request de login válido com username", done => {
         criarDummy()
             .then(dummy => {
                 request(servidor)
                     .post(`/api/v1/login`)
                     .send({
-                        username: dummy.username,
+                        login: dummy.username,
+                        senha: dummy.senha
+                    })
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) return done(err);
+
+                        expect(res.header["x-expires-after"]).toMatch(/^(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))$/);
+                        expect(res.body).toEqual({
+                            userId: expect.stringMatching(/^[a-f0-9]{24}$/),
+                            token: expect.stringMatching(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/)
+                        });
+
+                        done();
+                    });
+            });
+    });
+
+    it("Deve retornar 200 & response válido para request de login válido com email", done => {
+        criarDummy()
+            .then(dummy => {
+                request(servidor)
+                    .post(`/api/v1/login`)
+                    .send({
+                        login: dummy.email,
                         senha: dummy.senha
                     })
                     .expect(200)
@@ -158,7 +182,7 @@ describe("POST /api/v1/login", () => {
         request(servidor)
             .post(`/api/v1/login`)
             .send({
-                username: faker.internet.userName(),
+                login: faker.internet.userName(),
                 senha: faker.internet.password()
             })
             .expect(404)
@@ -177,7 +201,7 @@ describe("POST /api/v1/login", () => {
                 request(servidor)
                 .post(`/api/v1/login`)
                 .send({
-                    username: dummy.username,
+                    login: dummy.username,
                     senha: faker.internet.password()
                 })
                 .expect(404)
@@ -204,7 +228,7 @@ describe("POST /api/v1/login", () => {
                 expect(res.body).toMatchObject({
                     error: {
                         type: "validacao_request",
-                        message: expect.stringMatching(/username/)
+                        message: expect.stringMatching(/login/)
                     }
                 });
                 done();
