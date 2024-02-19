@@ -58,7 +58,7 @@ describe("Falha no login", () => {
         request(servidor)
             .post(`/api/v1/login`)
             .send({
-                username: faker.internet.userName(),
+                login: faker.internet.userName(),
                 senha: faker.internet.password()
             })
             .expect(500)

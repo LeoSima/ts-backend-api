@@ -24,7 +24,7 @@ tags:
 paths:
   /ola:
     get:
-      description: Retorna 'Olá, <nome>/estranho!' ao solicitante
+      description: Retorna "Olá, \<nome\>/'estranho'!" ao solicitante
       tags: 
         - saudacao
       operationId: ola
@@ -45,7 +45,7 @@ paths:
                 
   /adeus:
     get:
-      description: Retorna 'Adeus \<nome\>!' ao requisitante autenticado
+      description: Retorna 'Adeus \<nome\>!' ao requisitante (usuário autenticado)
       tags:
         - saudacao
       operationId: adeus
@@ -127,10 +127,10 @@ paths:
               type: object
               additionalProperties: false
               required:
-                - username
+                - login
                 - senha
               properties:
-                username:
+                login:
                   type: string
                 senha:
                   type: string
@@ -169,7 +169,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FalhaResponse'
-              
+         
  
 components:
   securitySchemes:
