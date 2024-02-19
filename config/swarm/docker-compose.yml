@@ -10,7 +10,7 @@ services:
   # root service: nginx as reverse-proxy for 1) ancient-one
   nginx-reverse:
     image: nginx
-    restart: always
+    restart: "no"
     deploy:
       placement: # to run this service on a specific node
         constraints:
@@ -36,7 +36,7 @@ services:
     build: # to build image with docker-compose
       context: ../../
       dockerfile: ./Dockerfile
-    restart: always
+    restart: "no"
     # deploy: # uncomment to run multiple ancient-one services
     #   replicas: 4
     #   resources:
@@ -55,7 +55,7 @@ services:
 
   redis:
     image: redis
-    restart: always
+    restart: "no"
     ports: # uncomment if you would like to connect from host
       - "6379:6379"
     command: redis-server --save ''
@@ -64,7 +64,7 @@ services:
   
   mongo:
     image: mongo
-    restart: always
+    restart: "no"
     deploy:
       placement: # to run this service on a specific node
         constraints:
