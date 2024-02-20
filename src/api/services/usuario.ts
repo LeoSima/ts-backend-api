@@ -11,6 +11,7 @@ export type ErroResponse = {error: {type: string, message: string}};
 export type AuthResponse = ErroResponse | {userId: string};
 export type CriarUsuarioResponse = ErroResponse | {userId: string};
 export type LoginUsuarioResponse = ErroResponse | {token: string, userId: string, expiraEm: Date};
+export type DeletarUsuarioResponse = ErroResponse | undefined;
 
 const privateKey = fs.readFileSync(config.privateKeyFile);
 const privateSecret = {
@@ -129,4 +130,21 @@ function criarUsuario(email: string, username: string, nome: string, senha: stri
     });
 }
 
-export default {auth: auth, criarTokenDeAutenticacao: criarTokenDeAutenticacao, login: login, criarUsuario: criarUsuario};
+async function deletarUsuario(usuarioId: string): Promise<DeletarUsuarioResponse> {
+    try {
+        cacheLocal.delete(usuarioId);
+        cacheExterno.deletePropriedade(usuarioId);
+
+        let usuario: IUsuario | null = await Usuario.findByIdAndDelete(usuarioId);
+
+        if (!usuario)
+            return {error: {type: "usuario_nao_encontrado", message: "Usuário não encontrado para o ID informado"}};
+
+        return
+    } catch (erro) {
+        logger.error(`deletarUsuario: ${erro}`);
+        return {error: {type: "erro_interno_do_servidor", message: "Erro Interno do Servidor"}};
+    }
+}
+
+export default {auth: auth, criarTokenDeAutenticacao: criarTokenDeAutenticacao, login: login, criarUsuario: criarUsuario, deletarUsuario: deletarUsuario};

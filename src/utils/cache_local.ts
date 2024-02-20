@@ -24,7 +24,8 @@ class CacheLocal {
     }
 
     public get<T>(key: Key): T | undefined { return this.cache.get<T>(key) }
-    public set<T>(key: Key, value: T): void { this.cache.set(key, value); }
+    public set<T>(key: Key, value: T): void { this.cache.set(key, value) }
+    public delete<T>(key: Key): void { this.cache.del(key) }
 }
 
 export default CacheLocal.recuperaInstancia();

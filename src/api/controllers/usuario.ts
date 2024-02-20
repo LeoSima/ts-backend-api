@@ -5,7 +5,6 @@ import { writeJsonResponse } from "@AncientOne/utils/express" ;
 import logger from "@AncientOne/utils/logger";
 
 export function auth(req: express.Request, res: express.Response, next: express.NextFunction): void {
-    // TODO: Verificar se o método funcionará (está diferente do que foi feito no artigo)
     try {
         const token = req.headers.authorization!;
         const auth = UsuarioService.auth(token);
@@ -62,6 +61,26 @@ export function login(req: express.Request, res: express.Response): void {
         })
         .catch((err: any) => {
             logger.error(`login: ${err}`);
+            writeJsonResponse(res, 500, {error: {type: "erro_interno_do_servidor", message: "Erro Interno do Servidor"}});
+        });
+}
+
+export function deletarUsuario(req: express.Request, res: express.Response): void {
+    const usuarioId: string = req.params.usuarioId!
+
+    UsuarioService.deletarUsuario(usuarioId)
+        .then((response) => {
+            if (!response) {
+                writeJsonResponse(res, 204, {});
+            } else {
+                if ((response as ErroResponse).error.type === "usuario_nao_encontrado")
+                    writeJsonResponse(res, 404, response);
+                else
+                    writeJsonResponse(res, 500, response);
+            }
+        })
+        .catch((erro: any) => {
+            logger.error(`deletarUsuario: ${erro}`);
             writeJsonResponse(res, 500, {error: {type: "erro_interno_do_servidor", message: "Erro Interno do Servidor"}});
         });
 }
