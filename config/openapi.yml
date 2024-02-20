@@ -24,6 +24,7 @@ tags:
 paths:
   /ola:
     get:
+      summary: Endpoint de teste (será refatorado para um healthchecker)
       description: Retorna "Olá, \<nome\>/'estranho'!" ao solicitante
       tags: 
         - saudacao
@@ -41,10 +42,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OlaResponse'
+                $ref: '#/components/schemas/MensagemBasicaResponse'
                 
   /adeus:
     get:
+      summary: Teste de autenticação e gerenciamento de jwt token
       description: Retorna 'Adeus \<nome\>!' ao requisitante (usuário autenticado)
       tags:
         - saudacao
@@ -57,7 +59,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OlaResponse'
+                $ref: '#/components/schemas/MensagemBasicaResponse'
  
   /usuario:
     post:
@@ -115,7 +117,7 @@ paths:
  
   /login:
     post:
-      summary: Login
+      summary: Login / Autenticação
       tags:
         - usuario
       operationId: login
@@ -169,7 +171,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FalhaResponse'
-         
+  
+  /deletarUsuario/{usuarioId}:
+    delete:
+      summary: Deleta usuário para o ID informado
+      description: Deleta o usuário de acordo com o ID
+      tags:
+        - usuario
+      operationId: deletarUsuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: usuarioId
+          required: true
+          description: ID do usuário
+          schema:
+            type: string
+      responses:
+        204:
+          description: Sucesso ao deletar o usuário
+        404:
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MensagemBasicaResponse'
+        500:
+          description: Erro Interno do Servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FalhaResponse"
+  
  
 components:
   securitySchemes:
@@ -179,7 +213,7 @@ components:
       bearerFormat: JWT
 
   schemas:
-    OlaResponse:
+    MensagemBasicaResponse:
       type: object
       additionalProperties: false
       required:
