@@ -81,6 +81,12 @@ class Cache {
 
         return resultado;
     }
+
+    public async deletePropriedade(key: string): Promise<void> {
+        this._client!.del(key).catch(() => {
+            throw new Error("Erro na conexão com o Redis");
+        });
+    }
 }
 
 export default Cache.recuperaInstancia();

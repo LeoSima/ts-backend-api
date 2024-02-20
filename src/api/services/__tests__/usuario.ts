@@ -4,6 +4,7 @@ import db from "@AncientOne/utils/db";
 import cacheExterno from "@AncientOne/utils/cache_externo";
 import usuario from "../usuario";
 import { criarDummy, criarDummyEAutorizar } from "@AncientOne/tests/usuario";
+import Usuario from "@AncientOne/api/models/usuario";
 
 beforeAll(async () => {
     await cacheExterno.abrir();
@@ -133,5 +134,36 @@ describe("criarUsuario", () => {
         const senha = faker.internet.password();
 
         await expect(usuario.criarUsuario(email, username, nome, senha)).rejects.toThrow("validation failed");
+    });
+});
+
+describe("deletarUsuario", () => {
+    it("Deve deletar um usuário com sucesso", async () => {
+        const usuarioDummy = await criarDummy();
+
+        await expect(usuario.deletarUsuario(usuarioDummy.userId)).resolves.toBeUndefined();
+    });
+
+    it("Deve retornar erro para ID de usuário não existente no banco", async () => {
+        const usuarioId = faker.database.mongodbObjectId();
+        
+        await expect(usuario.deletarUsuario(usuarioId)).resolves.toEqual({
+            error: {
+                type: "usuario_nao_encontrado",
+                message: "Usuário não encontrado para o ID informado"
+            }
+        });
+    });
+
+    it("Deve retornar um erro genérico caso haja um erro do lado do banco", async () => {
+        Usuario.findByIdAndDelete = jest.fn().mockImplementationOnce(() => { throw new Error("Erro teste") });
+        const usuarioDummy = await criarDummy();
+
+        await expect(usuario.deletarUsuario(usuarioDummy.userId)).resolves.toEqual({
+            error: {
+                type: "erro_interno_do_servidor",
+                message: "Erro Interno do Servidor"
+            }
+        });
     });
 });

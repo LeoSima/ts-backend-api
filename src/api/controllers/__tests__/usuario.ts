@@ -6,7 +6,9 @@ import { Express } from "express-serve-static-core";
 import db from "@AncientOne/utils/db";
 import cacheExterno from "@AncientOne/utils/cache_externo";
 import { criarServidor } from "@AncientOne/utils/servidor";
-import { criarDummy } from "@AncientOne/tests/usuario";
+import { criarDummy, criarDummyEAutorizar } from "@AncientOne/tests/usuario";
+import Usuario from "@AncientOne/api/models/usuario";
+import UsuarioService from "@AncientOne/api/services/usuario";
 
 let servidor: Express;
 beforeAll(async () => {
@@ -232,6 +234,103 @@ describe("POST /api/v1/login", () => {
                     }
                 });
                 done();
+            });
+    });
+});
+
+describe("DELETE /ap/v1/deletarUsuario", () => {
+    it("Deve retornar 204 ao deletar usuário com sucesso", done => {
+        criarDummyEAutorizar()
+            .then(dummy => {
+                request(servidor)
+                    .delete(`/api/v1/deletarUsuario/${dummy.userId}`)
+                    .set("Authorization", `Bearer ${dummy.token}`)
+                    .expect(204)
+                    .end(function (err, res) {
+                        if (err) return done(err);
+                        done();
+                    });
+            });
+    });
+
+    it("Deve retornar 401 ao fazer requisição sem o token de acesso", done => {
+        criarDummyEAutorizar()
+            .then(dummy => {
+                request(servidor)
+                    .delete(`/api/v1/deletarUsuario/${dummy.userId}`)
+                    .expect(401)
+                    .end(function (err, res) {
+                        if (err) return done(err);
+                        done();
+                    });
+            });
+    });
+
+    it("Deve retornar 404 ao tentar deletar usuário não existente", done => {
+        const usuarioId = faker.database.mongodbObjectId();
+
+        criarDummyEAutorizar()
+            .then(dummy => {
+                request(servidor)
+                    .delete(`/api/v1/deletarUsuario/${usuarioId}`)
+                    .set("Authorization", `Bearer ${dummy.token}`)
+                    .expect(404)
+                    .end(function(err, res) {
+                        if (err) return done(err);
+                        expect(res.body).toMatchObject({
+                            error: {
+                                type: "usuario_nao_encontrado",
+                                message: "Usuário não encontrado para o ID informado"
+                            }
+                        });
+                        done();
+                    });
+            });
+    });
+
+    it("Deve retornar 500 caso aconteça um erro no lado do MongoDB", done => {
+        Usuario.findByIdAndDelete = jest.fn().mockImplementationOnce(() => {
+            throw new Error("Erro Teste");
+        });
+
+        criarDummyEAutorizar()
+            .then(dummy => {
+                request(servidor)
+                    .delete(`/api/v1/deletarUsuario/${dummy.userId}`)
+                    .set("Authorization", `Bearer ${dummy.token}`)
+                    .expect(500)
+                    .end(function (err, res) {
+                        if (err) return done(err);
+                        expect(res.body).toMatchObject({
+                            error: {
+                                type: "erro_interno_do_servidor",
+                                message: "Erro Interno do Servidor"
+                            }
+                        });
+                        done();
+                    });
+            });
+    });
+
+    it("Deve retornar 500 caso aconteça um erro inesperado na service", done => {
+        UsuarioService.deletarUsuario = jest.fn().mockRejectedValueOnce(new Error("Erro Teste"));
+
+        criarDummyEAutorizar()
+            .then(dummy => {
+                request(servidor)
+                    .delete(`/api/v1/deletarUsuario/${dummy.userId}`)
+                    .set("Authorization", `Bearer ${dummy.token}`)
+                    .expect(500)
+                    .end(function (err, res) {
+                        if (err) return done(err);
+                        expect(res.body).toMatchObject({
+                            error: {
+                                type: "erro_interno_do_servidor",
+                                message: "Erro Interno do Servidor"
+                            }
+                        });
+                        done();
+                    });
             });
     });
 });
